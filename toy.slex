@@ -1,0 +1,20 @@
+# toy.slex -- the token language of the toy while-language
+
+%kinds toy.K
+
+%{
+  // Helper functions for the blocks below.  This is ordinary
+  // Scala; anything defined here can be used in any block.
+  def toNumber(s: String): Int = s.toInt
+%}
+
+%token
+  WHILE "while"   IF    "if"      LEQ   "<="
+  LT    "<"       LP    "("       RP    ")"
+
+# whitespace: no block, so matches are discarded
+[ \t\r\n]+
+
+# a number: the block runs on the matched digits and builds the
+# token, storing the parsed Int in the token's value field
+[0-9]+      { Token(NUM, text, pos, toNumber(text)) }

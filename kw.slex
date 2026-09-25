@@ -1,0 +1,9 @@
+# kw.slex -- one keyword and an identifier rule (Law 2: first rule
+# wins ties, which is the whole keyword table)
+
+%kinds laws.KwK
+
+%token
+  WHILE "while"
+
+[a-z]+    { Token(ID, text, pos) }

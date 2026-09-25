@@ -1,0 +1,7 @@
+# hw2.slex -- the three-rule lexer of HW 2, problem 2
+
+%kinds hw.K
+
+(aba)+    { Token(Tok1, text, pos) }
+a(b)+a    { Token(Tok2, text, pos) }
+a|b       { Token(Tok3, text, pos) }

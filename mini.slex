@@ -1,0 +1,15 @@
+# mini.slex -- a small cut of the IC lexer
+
+%kinds mini.K
+
+%token
+  WHILE  "while"   IF     "if"      ELSE   "else"
+  LEQ    "<="      EQ     "=="      ASSIGN "="
+  LT     "<"       LP     "("       RP     ")"
+  LB     "{"       RB     "}"       SEMI   ";"
+
+[ \t\r\n]+
+//[^\n]*
+
+[a-zA-Z][a-zA-Z0-9_]*  { Token(ID, text, pos) }
+[0-9]+                 { Token(NUM, text, pos) }

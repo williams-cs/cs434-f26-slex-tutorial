@@ -1,0 +1,16 @@
+# strings.slex -- action blocks doing the non-regular work
+
+%kinds strings.K
+
+# the real string rule (the quotes come off in the block), then the
+# lower-priority catch-all whose block IS the error
+"[^"\n]*"  { Token(STR, text.substring(1, text.length - 1), pos) }
+"          { error("Beginning of unterminated string literal.") }
+
+# range-checked integers: the parsed value rides in the token
+[0-9]+     {
+    val n = text.toIntOption.getOrElse(error("Integer out of range."))
+    Token(NUM, text, pos, n)
+}
+
+[ ]+

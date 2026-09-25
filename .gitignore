@@ -1,0 +1,14 @@
+*.class
+*.log
+*~
+*.output
+
+target/
+.bsp/
+.metals/
+.bloop/
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+.scala-build/

@@ -1,0 +1,6 @@
+# rel.slex -- two relational operators (Law 1: maximal munch)
+
+%kinds laws.RelK
+
+%token
+  LT  "<"    LEQ "<="
