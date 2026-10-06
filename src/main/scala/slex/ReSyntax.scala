@@ -10,7 +10,9 @@ import scup.*
  *   re"while|if|else"              keywords
  *
  * Supported: literal characters; `.` (any character except newline);
- * escapes `\n` `\t` `\r` and `\x` for any metacharacter x; postfix
+ * escapes `\n` `\t` `\r` and `\x` for any non-alphanumeric x (any
+ * other letter or digit escape, such as `\f` or `\d`, is an error
+ * rather than silently meaning the letter itself); postfix
  * `*` `+` `?`; alternation `|`; grouping `( )`; character classes
  * `[abc]`, `[a-z0-9]`, `[^...]` (negated).
  *
@@ -56,10 +58,16 @@ object ReSyntax:
     case '-'  => Dash
     case _    => Plain
 
-  private def unescape(c: Char): Char = c match
+  /** A letter or digit escape other than \n \t \r, at column col. */
+  private final class BadEscape(c: Char, col: Int) extends Exception(
+    s"unsupported escape '\\$c' at column $col (slex escapes are \\n \\t \\r, " +
+    "and \\x for any non-alphanumeric x)")
+
+  private def unescape(t: CTok): Char = t.c match
     case 'n' => '\n'
     case 't' => '\t'
     case 'r' => '\r'
+    case c if c.isLetterOrDigit => throw BadEscape(c, t.pos.col - 1)
     case c   => c
 
   private object G extends Grammar[CTok, CK](t => classify(t.c), Map(
@@ -68,10 +76,11 @@ object ReSyntax:
       Esc -> "'\\'", Dot -> "'.'", Caret -> "'^'", Dash -> "'-'",
       Plain -> "a character")):
 
-    /** Backslash escapes: \n \t \r are control characters, \x is x itself. */
+    /** Backslash escapes: \n \t \r are control characters, \x is x
+     *  itself for non-alphanumeric x, and any other escape is an error. */
     lazy val escape: Rule[Char] = rule(
       (!Esc, oneOf("an escaped character")(CK.values.toSeq*))
-        --> { t => unescape(t.c) })
+        --> { t => unescape(t) })
 
     // '^' and '-' are metacharacters only inside a class; outside
     // they are ordinary characters.
@@ -144,7 +153,7 @@ object ReSyntax:
 
   def parse(pattern: String): Re =
     try G.parse(G.alt, lexChars(pattern))
-    catch case e: ParseError =>
+    catch case e: (ParseError | BadEscape) =>
       throw scup.SpecAssemble.diagnostic(
         IllegalArgumentException(s"bad regex \"$pattern\": ${e.getMessage}"))
 
